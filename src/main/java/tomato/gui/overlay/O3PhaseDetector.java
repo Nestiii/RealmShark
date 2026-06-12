@@ -185,38 +185,32 @@ public class O3PhaseDetector {
             new PhaseAlert("METEOR SHOWER — Red circle telegraphed meteors", "#FFA500", 3000, Danger.MEDIUM,
                 "Avoid red circles — guard triggers if over-DPS'd"));
 
-        // ── Realm Event Tests (for pipeline testing without reaching O3) ───
-        // Keyed on the boss-name FRAGMENT (not a full sentence) so they match whatever
-        // exact phrasing the realm announcement uses ("A Cube God has appeared",
-        // "Cube God has spawned in ...", etc.). These only run for realm/server-sender
-        // messages (see ChatGUI.o3Overlay), so a player typing the name won't trigger them.
-        // Confirm the real announcement format with the "Log Chat Senders (debug)" toggle.
-        TAUNT_MAP.put("Skull Shrine",
-            new PhaseAlert("SKULL SHRINE spawned", "#FF8888", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Cube God",
-            new PhaseAlert("CUBE GOD spawned", "#8888FF", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Pentaract",
-            new PhaseAlert("PENTARACT spawned", "#FF88FF", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Grand Sphinx",
-            new PhaseAlert("GRAND SPHINX spawned", "#FFCC66", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Lord of the Lost Lands",
-            new PhaseAlert("LORD OF THE LOST LANDS spawned", "#88FF88", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Hermit God",
-            new PhaseAlert("HERMIT GOD spawned", "#66CCFF", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Ghost Ship",
-            new PhaseAlert("GHOST SHIP appeared", "#AADDDD", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Ent Ancient",
-            new PhaseAlert("ENT ANCIENT spawned", "#88CC66", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Cyclops God",
-            new PhaseAlert("CYCLOPS GOD spawned", "#FFAA66", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Phoenix Lord",
-            new PhaseAlert("PHOENIX LORD spawned", "#FF6644", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Red Demon",
-            new PhaseAlert("RED DEMON spawned", "#FF4444", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Lich",
-            new PhaseAlert("LICH spawned", "#CC88FF", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("Oryx has been summoned",
-            new PhaseAlert("ORYX SUMMONED", "#FFD700", 3000, Danger.MEDIUM, "[test event]"));
+        // ── Realm Event Encounters ────────────────────────────────────────
+        // Authoritative list from RealmEye's quest-monsters "Encounters" section.
+        // Keyed on the encounter NAME, matched as a substring of the chat text. These only
+        // run for realm/server-sender messages (see ChatGUI.o3Overlay), so a player typing
+        // a name won't trigger them.
+        //
+        // The label is just the encounter name (no "spawned" verb): we match on the bare
+        // name and the exact announcement isn't confirmed, so the same entry fires for a
+        // spawn OR a death/defeat message — showing only the name keeps it correct either
+        // way. No insertion-order dependency: no name is a substring of another.
+        String[] realmEvents = {
+            "Cube God", "Astral Rift", "Daughter of Limon", "Pentaract", "The Lich King",
+            "The Plague Doctor", "Well of Souls", "Skull Shrine", "Possessed Pumpkin",
+            "Sigma Werewolf", "Skull Knight", "Crab Sovereign", "Beer God", "Eye of the Storm",
+            "Ghost Ship", "Bilgewater's Galleon", "Hermit God", "World's Oyster", "Carp Emperor",
+            "Grand Sphinx", "Jade Statue", "Garnet Statue", "Rock Dragon", "Goblin Patriarch",
+            "Maze Minotaur", "Legion General", "Mammoth Rat", "Adult Baneserpent", "Ancient Kaiju",
+            "Flying Behemoth", "Dwarf Miner", "Crystal Worm Father", "Ethereal Shrine",
+            "Corrupted Bramblethorn", "Kogbold Expedition Engine", "Killer Bee Nest",
+            "Yellow Beehemoth", "Red Beehemoth", "Blue Beehemoth", "Avatar of the Forgotten King",
+            "Ravenous Rot", "Skeletal Centipede", "Lost Sentry", "Lord of the Lost Lands",
+            "Aerial Warship", "Sentient Monolith"
+        };
+        for (String ev : realmEvents) {
+            TAUNT_MAP.put(ev, new PhaseAlert(ev, "#77CCFF", 3000, Danger.LOW, "[realm event]"));
+        }
     }
 
     public static PhaseAlert detect(String chatText) {

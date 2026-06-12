@@ -436,13 +436,23 @@ string through `O3PhaseDetector.detect` and shows the overlay if matched.
 ## 10. Test without an O3 run — realm events
 
 The realm broadcasts event-boss spawn messages through the **same** `TextPacket` path as O3
-taunts, so they exercise the entire pipeline. `TAUNT_MAP` carries a broad set of realm-event
-test entries, keyed on the **boss-name fragment** (so they match regardless of the exact
-announcement phrasing): **Skull Shrine, Cube God, Pentaract, Grand Sphinx, Lord of the Lost
-Lands, Hermit God, Ghost Ship, Ent Ancient, Cyclops God, Phoenix Lord, Red Demon, Lich**,
-plus "Oryx has been summoned". Hang around the Realm; if the overlay shows for any of these,
-the hook, detector, and overlay all work end to end. The "Test O3 Overlay" menu item (§9)
-tests the overlay display alone, no game needed.
+taunts, so they exercise the entire pipeline. `TAUNT_MAP` registers the **full authoritative
+encounter list** from RealmEye's quest-monsters "Encounters" section (46 events — Cube God,
+Astral Rift, The Lich King, Skull Shrine, Pentaract, Grand Sphinx, Lord of the Lost Lands,
+Hermit God, Ghost Ship, Killer Bee Nest, Avatar of the Forgotten King, Sentient Monolith, …),
+each keyed on the **encounter name** as a substring. Verified at build time that no name is a
+substring of another, so match order is safe. Hang around the Realm; if the overlay shows for
+any of these, the hook, detector, and overlay all work end to end. The "Test O3 Overlay" menu
+item (§9) tests the overlay display alone, no game needed.
+
+> ⚠ Names replace the earlier guessed fragments (which wrongly included Ent Ancient / Cyclops
+> God / Phoenix Lord / Red Demon — not in the current encounter list — and "Lich" instead of
+> "The Lich King"). The overlay label is **just the encounter name** (no "spawned" verb): we
+> match the bare name, so the same entry fires for a spawn *or* a death/defeat message, and
+> showing only the name stays correct either way. Still unverified: the realm-event **sender**
+> gate (research indicates events are announced by an NPC, **"The Realm Eye"**, so the sender
+> is likely *not* blank — confirm with **Log Chat Senders (debug)** and widen the gate in
+> `ChatGUI.o3Overlay`).
 
 > ⚠ These fire only for **realm/server-sender** messages (`sender` blank or `#`-prefixed in
 > `ChatGUI.o3Overlay`). If the debug log shows realm events arrive with a different sender,
