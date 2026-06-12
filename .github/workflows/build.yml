@@ -15,6 +15,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # The repo gitignores the whole gradle/ dir, so the wrapper jar isn't committed.
+      # Install Gradle directly and invoke `gradle` instead of ./gradlew.
+      # shadow plugin 7.0.0 requires Gradle 7.x (Gradle 8 breaks it).
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '7.6.4'
+
       # --- Build the RealmShark backend jar from the realmshark branch (latest, v1.2.3) ---
       - name: Checkout realmshark backend
         uses: actions/checkout@v4
@@ -24,8 +32,7 @@ jobs:
       - name: Build backend shadowJar
         working-directory: backend
         run: |
-          chmod +x gradlew
-          ./gradlew shadowJar --no-daemon
+          gradle shadowJar --no-daemon
           mkdir -p "$GITHUB_WORKSPACE/jarout"
           cp build/libs/RealmShark-*.jar "$GITHUB_WORKSPACE/jarout/"
 
@@ -44,8 +51,7 @@ jobs:
       - name: Build Tomato shadowJar
         working-directory: tomato
         run: |
-          chmod +x gradlew
-          ./gradlew shadowJar --no-daemon
+          gradle shadowJar --no-daemon
 
       - name: Upload Tomato jar
         uses: actions/upload-artifact@v4
