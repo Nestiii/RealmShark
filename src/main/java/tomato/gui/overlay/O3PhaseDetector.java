@@ -186,10 +186,35 @@ public class O3PhaseDetector {
                 "Avoid red circles — guard triggers if over-DPS'd"));
 
         // ── Realm Event Tests (for pipeline testing without reaching O3) ───
-        TAUNT_MAP.put("Cube God has appeared",
-            new PhaseAlert("CUBE GOD spawned", "#8888FF", 3000, Danger.LOW, "[test event]"));
-        TAUNT_MAP.put("A Skull Shrine has risen",
+        // Keyed on the boss-name FRAGMENT (not a full sentence) so they match whatever
+        // exact phrasing the realm announcement uses ("A Cube God has appeared",
+        // "Cube God has spawned in ...", etc.). These only run for realm/server-sender
+        // messages (see ChatGUI.o3Overlay), so a player typing the name won't trigger them.
+        // Confirm the real announcement format with the "Log Chat Senders (debug)" toggle.
+        TAUNT_MAP.put("Skull Shrine",
             new PhaseAlert("SKULL SHRINE spawned", "#FF8888", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Cube God",
+            new PhaseAlert("CUBE GOD spawned", "#8888FF", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Pentaract",
+            new PhaseAlert("PENTARACT spawned", "#FF88FF", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Grand Sphinx",
+            new PhaseAlert("GRAND SPHINX spawned", "#FFCC66", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Lord of the Lost Lands",
+            new PhaseAlert("LORD OF THE LOST LANDS spawned", "#88FF88", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Hermit God",
+            new PhaseAlert("HERMIT GOD spawned", "#66CCFF", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Ghost Ship",
+            new PhaseAlert("GHOST SHIP appeared", "#AADDDD", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Ent Ancient",
+            new PhaseAlert("ENT ANCIENT spawned", "#88CC66", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Cyclops God",
+            new PhaseAlert("CYCLOPS GOD spawned", "#FFAA66", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Phoenix Lord",
+            new PhaseAlert("PHOENIX LORD spawned", "#FF6644", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Red Demon",
+            new PhaseAlert("RED DEMON spawned", "#FF4444", 3000, Danger.LOW, "[test event]"));
+        TAUNT_MAP.put("Lich",
+            new PhaseAlert("LICH spawned", "#CC88FF", 3000, Danger.LOW, "[test event]"));
         TAUNT_MAP.put("Oryx has been summoned",
             new PhaseAlert("ORYX SUMMONED", "#FFD700", 3000, Danger.MEDIUM, "[test event]"));
     }

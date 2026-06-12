@@ -435,12 +435,19 @@ string through `O3PhaseDetector.detect` and shows the overlay if matched.
 
 ## 10. Test without an O3 run — realm events
 
-Unchanged from the original and still valid: the realm broadcasts event messages
-("Cube God has appeared", "A Skull Shrine has risen", "Oryx has been summoned") through
-the **same** `TextPacket` path, so they exercise the entire pipeline. They're included in
-`TAUNT_MAP` (§6). Hang around the Realm; if the overlay shows for those, the hook,
-detector, and overlay all work end to end. The "Test O3 Overlay" menu item (§9) tests the
-overlay display alone, no game needed.
+The realm broadcasts event-boss spawn messages through the **same** `TextPacket` path as O3
+taunts, so they exercise the entire pipeline. `TAUNT_MAP` carries a broad set of realm-event
+test entries, keyed on the **boss-name fragment** (so they match regardless of the exact
+announcement phrasing): **Skull Shrine, Cube God, Pentaract, Grand Sphinx, Lord of the Lost
+Lands, Hermit God, Ghost Ship, Ent Ancient, Cyclops God, Phoenix Lord, Red Demon, Lich**,
+plus "Oryx has been summoned". Hang around the Realm; if the overlay shows for any of these,
+the hook, detector, and overlay all work end to end. The "Test O3 Overlay" menu item (§9)
+tests the overlay display alone, no game needed.
+
+> ⚠ These fire only for **realm/server-sender** messages (`sender` blank or `#`-prefixed in
+> `ChatGUI.o3Overlay`). If the debug log shows realm events arrive with a different sender,
+> widen that gate. The boss-name fragments themselves are best-effort — confirm exact in-game
+> wording with **Log Chat Senders (debug)** and adjust if any don't fire.
 
 ---
 
