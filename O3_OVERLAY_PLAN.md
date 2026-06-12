@@ -120,9 +120,19 @@ backend and re-pin to the new version in the same one-line change.
 ### GitHub Actions (`.github/workflows/build.yml`)
 
 > ⚠ **CORRECTION:** this no longer does `git checkout tomato` mid-job. Two branches are
-> built in two separate checkouts so each has its own clean tree, and the backend jar is
-> renamed to the pinned filename. Note `java-version: '17'` is fine even though the code
-> targets Java 8 — `targetCompatibility = 1.8` makes javac emit Java-8 bytecode.
+> built in two separate checkouts so each has its own clean tree. Two further gotchas found
+> when the workflow first ran (and fixed below):
+> - **The repo gitignores the whole `gradle/` directory**, so `gradle/wrapper/gradle-wrapper.jar`
+>   is **not committed** and `./gradlew` fails on a clean CI checkout with
+>   `ClassNotFoundException: org.gradle.wrapper.GradleWrapperMain`. Fix: install Gradle via
+>   `gradle/actions/setup-gradle` and call `gradle` directly instead of `./gradlew`.
+> - **shadow plugin 7.0.0 requires Gradle 7.x** (Gradle 8 breaks it), so the Gradle version
+>   is pinned to `7.6.4`.
+>
+> `java-version: '17'` is fine even though the code targets Java 8 —
+> `targetCompatibility = 1.8` makes javac emit Java-8 bytecode.
+>
+> **Status: this exact workflow is committed and passing** (build ~58s, uploads `Tomato-jar`).
 
 ```yaml
 name: Build Tomato
@@ -142,7 +152,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # --- Build the RealmShark backend jar from the realmshark branch ---
+      # gradle/ is gitignored → no committed wrapper jar. Install Gradle and use it directly.
+      # shadow 7.0.0 needs Gradle 7.x.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '7.6.4'
+
+      # --- Build the RealmShark backend jar from the realmshark branch (latest, v1.2.3) ---
       - name: Checkout realmshark backend
         uses: actions/checkout@v4
         with:
@@ -151,8 +168,7 @@ jobs:
       - name: Build backend shadowJar
         working-directory: backend
         run: |
-          chmod +x gradlew
-          ./gradlew shadowJar --no-daemon
+          gradle shadowJar --no-daemon
           mkdir -p "$GITHUB_WORKSPACE/jarout"
           cp build/libs/RealmShark-*.jar "$GITHUB_WORKSPACE/jarout/"
 
@@ -171,8 +187,7 @@ jobs:
       - name: Build Tomato shadowJar
         working-directory: tomato
         run: |
-          chmod +x gradlew
-          ./gradlew shadowJar --no-daemon
+          gradle shadowJar --no-daemon
 
       - name: Upload Tomato jar
         uses: actions/upload-artifact@v4
