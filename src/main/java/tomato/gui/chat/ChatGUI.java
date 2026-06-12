@@ -270,6 +270,11 @@ public class ChatGUI extends JPanel {
         boolean isRealmEvent = sender.isEmpty() || sender.startsWith("#");
         if (!isOryx && !isRealmEvent) return;
 
+        // Realm-event entries match on the bare encounter name, which also appears in the
+        // kill/defeat announcement. Skip anything containing "defeat" so we fire on the
+        // spawn, not the death. (O3 taunts never contain "defeat", so this is safe.)
+        if (isRealmEvent && p.text.toLowerCase().contains("defeat")) return;
+
         O3PhaseDetector.PhaseAlert alert = O3PhaseDetector.detect(p.text);
         if (alert == null) return;
         try {

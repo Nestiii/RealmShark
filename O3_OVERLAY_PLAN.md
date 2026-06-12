@@ -447,12 +447,12 @@ item (§9) tests the overlay display alone, no game needed.
 
 > ⚠ Names replace the earlier guessed fragments (which wrongly included Ent Ancient / Cyclops
 > God / Phoenix Lord / Red Demon — not in the current encounter list — and "Lich" instead of
-> "The Lich King"). The overlay label is **just the encounter name** (no "spawned" verb): we
-> match the bare name, so the same entry fires for a spawn *or* a death/defeat message, and
-> showing only the name stays correct either way. Still unverified: the realm-event **sender**
-> gate (research indicates events are announced by an NPC, **"The Realm Eye"**, so the sender
-> is likely *not* blank — confirm with **Log Chat Senders (debug)** and widen the gate in
-> `ChatGUI.o3Overlay`).
+> "The Lich King"). The overlay label is **just the encounter name** (no "spawned" verb), and
+> `ChatGUI.o3Overlay` **skips realm messages containing "defeat"** so a kill/defeat
+> announcement (which also contains the name) doesn't fire — only the spawn does. Still
+> unverified: the realm-event **sender** gate (research indicates events are announced by an
+> NPC, **"The Realm Eye"**, so the sender is likely *not* blank — confirm with **Log Chat
+> Senders (debug)** and widen the gate in `ChatGUI.o3Overlay`).
 
 > ⚠ These fire only for **realm/server-sender** messages (`sender` blank or `#`-prefixed in
 > `ChatGUI.o3Overlay`). If the debug log shows realm events arrive with a different sender,

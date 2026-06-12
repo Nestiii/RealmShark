@@ -192,9 +192,9 @@ public class O3PhaseDetector {
         // a name won't trigger them.
         //
         // The label is just the encounter name (no "spawned" verb): we match on the bare
-        // name and the exact announcement isn't confirmed, so the same entry fires for a
-        // spawn OR a death/defeat message — showing only the name keeps it correct either
-        // way. No insertion-order dependency: no name is a substring of another.
+        // name, and ChatGUI.o3Overlay skips realm messages containing "defeat" so this fires
+        // on the spawn announcement, not the kill/defeat one. No insertion-order dependency:
+        // no name is a substring of another.
         String[] realmEvents = {
             "Cube God", "Astral Rift", "Daughter of Limon", "Pentaract", "The Lich King",
             "The Plague Doctor", "Well of Souls", "Skull Shrine", "Possessed Pumpkin",
