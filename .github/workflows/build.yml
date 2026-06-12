@@ -1,0 +1,55 @@
+name: Build Tomato
+
+on:
+  push:
+    branches: [ overlay ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # --- Build the RealmShark backend jar from the realmshark branch (latest, v1.2.3) ---
+      - name: Checkout realmshark backend
+        uses: actions/checkout@v4
+        with:
+          ref: realmshark
+          path: backend
+      - name: Build backend shadowJar
+        working-directory: backend
+        run: |
+          chmod +x gradlew
+          ./gradlew shadowJar --no-daemon
+          mkdir -p "$GITHUB_WORKSPACE/jarout"
+          cp build/libs/RealmShark-*.jar "$GITHUB_WORKSPACE/jarout/"
+
+      # --- Build Tomato (overlay branch) against that jar ---
+      - name: Checkout overlay
+        uses: actions/checkout@v4
+        with:
+          ref: overlay
+          path: tomato
+      - name: Stage latest backend jar into libs/
+        working-directory: tomato
+        run: |
+          mkdir -p libs
+          # build.gradle is pinned to RealmShark-v1.2.3.jar; copy the freshly built jar as-is
+          cp "$GITHUB_WORKSPACE"/jarout/RealmShark-*.jar libs/
+      - name: Build Tomato shadowJar
+        working-directory: tomato
+        run: |
+          chmod +x gradlew
+          ./gradlew shadowJar --no-daemon
+
+      - name: Upload Tomato jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tomato-jar
+          path: tomato/build/libs/Tomato-*.jar
+          retention-days: 7

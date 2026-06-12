@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import packets.incoming.TextPacket;
 import tomato.backend.data.TomatoData;
 import tomato.gui.TomatoGUI;
+import tomato.gui.overlay.O3PhaseDetector;
+import tomato.gui.overlay.O3PhaseOverlay;
 import tomato.realmshark.Sound;
 import util.Util;
 
@@ -156,6 +158,8 @@ public class ChatGUI extends JPanel {
     public static void updateChat(TextPacket p) {
         if (!blockedSpam.isEmpty() && blockedSpam.stream().anyMatch(p.text::contains)) return;
 
+        o3Overlay(p);
+
         String a = "";
         int type = 0;
         boolean isPlayer = false;
@@ -245,6 +249,33 @@ public class ChatGUI extends JPanel {
 
         if (save) {
             Util.print("chat/chat", s);
+        }
+    }
+
+    /**
+     * O3 phase overlay hook. Passive — mirrors the sound-ping pattern: gates on the
+     * sender being Oryx (or a server/realm announcement) and flashes the overlay when the
+     * message body matches a known taunt. Sender filter strings are best-effort; confirm
+     * the exact in-game name format and tighten if needed.
+     */
+    private static void o3Overlay(TextPacket p) {
+        if (p == null || p.text == null) return;
+        String sender = p.name == null ? "" : p.name;
+        if (O3PhaseOverlay.logSenders) {
+            System.out.println("[O3Overlay] name='" + sender + "' text='" + p.text + "'");
+        }
+        if (!O3PhaseOverlay.enabled) return;
+        boolean isOryx = sender.contains("Oryx the Mad God")
+                      || sender.contains("Oryx the Exalted God");
+        boolean isRealmEvent = sender.isEmpty() || sender.startsWith("#");
+        if (!isOryx && !isRealmEvent) return;
+
+        O3PhaseDetector.PhaseAlert alert = O3PhaseDetector.detect(p.text);
+        if (alert == null) return;
+        try {
+            O3PhaseOverlay.getInstance().showPhase(alert);
+        } catch (Exception ignored) {
+            // Overlay unavailable (e.g. transparency unsupported) — never break chat handling.
         }
     }
 

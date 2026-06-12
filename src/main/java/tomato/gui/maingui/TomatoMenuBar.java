@@ -8,6 +8,7 @@ import tomato.gui.chat.ChatGUI;
 import tomato.gui.chat.ChatPingGUI;
 import tomato.gui.dps.DpsDisplayOptions;
 import tomato.gui.dps.DpsGUI;
+import tomato.gui.overlay.O3PhaseOverlay;
 import tomato.gui.stats.LootGUI;
 import tomato.realmshark.Sound;
 import tomato.realmshark.enums.LootBags;
@@ -22,16 +23,17 @@ import java.awt.event.ActionListener;
  * Menu bar builder class
  */
 public class TomatoMenuBar implements ActionListener {
-    private JMenuItem about, borders, clearChat, bandwidth, javav, clearDpsLogs, theme, fontMenu, dpsOptions, chat, sound, chatPingMessage, entityIdPingMessage, itemPingMessage, enchantPingMessage;
+    private JMenuItem about, borders, clearChat, bandwidth, javav, clearDpsLogs, theme, fontMenu, dpsOptions, chat, sound, chatPingMessage, entityIdPingMessage, itemPingMessage, enchantPingMessage, testO3Overlay;
     private JRadioButtonMenuItem fontSize8, fontSize12, fontSize16, fontSize24, fontSize48, fontSizeCustom;
     private JRadioButtonMenuItem themeDarcula, themeighContrastDark, themeHighContrastLight, themeIntelliJ, themeSolarizedDark, themeSolarizedLight;
     private JRadioButtonMenuItem fontNameMonospaced, fontNameDialog, fontNameDialogInput, fontNameSerif, fontNameSansSerif, fontNameSegoe;
     private JRadioButtonMenuItem dpsEquipmentNone, dpsEquipmentSimple, dpsEquipmentFull, dpsIcon;
     private JRadioButtonMenuItem dpsSortLastHit, dpsSortFirstHit, dpsSortMaxHp, dpsSortFightTimer, dpsSortBossOnly;
     private JCheckBoxMenuItem fontStyleBold, fontStyleItalic, dpsShowMe, saveChat, chatPing, chatPingGuild, whiteBagSound, chatPingParty, orangeBagSound, redBagSound, goldBagSound, eggBagSound, blueBagSound, tradePing, disableDataSending;
+    private JCheckBoxMenuItem enableO3Overlay, logChatSenders;
     private JCheckBoxMenuItem filterWhiteBag, filterOrangeBag, filterRedBag, filterGoldBag, filterEggBag, filterBlueBag, filterTealBag, filterPurpleBag, filterPinkBag, filterBrownBag;
     private JSlider soundSlider;
-    private JMenu file, edit, info;
+    private JMenu file, edit, info, overlayMenu;
     private JMenuBar jMenuBar;
     private JFrame frame;
     private static JMenuItem sniffer;
@@ -295,6 +297,20 @@ public class TomatoMenuBar implements ActionListener {
         info.add(bandwidth);
         jMenuBar.add(info);
 
+        enableO3Overlay = new JCheckBoxMenuItem("Enable O3 Overlay");
+        enableO3Overlay.addActionListener(this);
+        logChatSenders = new JCheckBoxMenuItem("Log Chat Senders (debug)");
+        logChatSenders.addActionListener(this);
+        testO3Overlay = new JMenuItem("Test O3 Overlay");
+        testO3Overlay.addActionListener(this);
+        overlayMenu = new JMenu("Overlay");
+        overlayMenu.add(enableO3Overlay);
+        overlayMenu.add(logChatSenders);
+        overlayMenu.add(new JSeparator(SwingConstants.HORIZONTAL));
+        overlayMenu.add(testO3Overlay);
+        jMenuBar.add(overlayMenu);
+        setOverlayCheckbox();
+
         autoStartSnifferPreset();
 
         return jMenuBar;
@@ -462,6 +478,19 @@ public class TomatoMenuBar implements ActionListener {
             saveChat.setSelected(save.equals("true"));
             ChatGUI.save = save.equals("true");
         }
+    }
+
+    private void setOverlayCheckbox() {
+        // Overlay defaults ON when no preference saved yet.
+        String en = PropertiesManager.getProperty("o3OverlayEnabled");
+        boolean enabled = en == null || en.equals("true");
+        enableO3Overlay.setSelected(enabled);
+        O3PhaseOverlay.enabled = enabled;
+
+        String log = PropertiesManager.getProperty("o3LogChatSenders");
+        boolean log_ = log != null && log.equals("true");
+        logChatSenders.setSelected(log_);
+        O3PhaseOverlay.logSenders = log_;
     }
 
     private void setSoundCheckbox() {
@@ -746,6 +775,28 @@ public class TomatoMenuBar implements ActionListener {
             TomatoGUI.openItemPing();
         } else if (e.getSource() == enchantPingMessage) { // enchant ping message
             TomatoGUI.openEnchantPing();
+        } else if (e.getSource() == enableO3Overlay) { // master overlay toggle
+            boolean b = enableO3Overlay.isSelected();
+            PropertiesManager.setProperties("o3OverlayEnabled", b ? "true" : "false");
+            O3PhaseOverlay.enabled = b;
+        } else if (e.getSource() == logChatSenders) { // debug: log every chat name/text
+            boolean b = logChatSenders.isSelected();
+            PropertiesManager.setProperties("o3LogChatSenders", b ? "true" : "false");
+            O3PhaseOverlay.logSenders = b;
+        } else if (e.getSource() == testO3Overlay) { // fire sample O3 taunts through the overlay
+            final String[] tests = {
+                "FALL BEFORE MY CELESTIAL STRENGTH!",
+                "NO! This cannot be…",
+                "Accept your fate!",
+                "The ground quakes from my splendor!"
+            };
+            int[] delays = {0, 2500, 5000, 7500};
+            for (int i = 0; i < tests.length; i++) {
+                final String t = tests[i];
+                Timer timer = new Timer(delays[i], ev -> O3PhaseOverlay.debugTest(t));
+                timer.setRepeats(false);
+                timer.start();
+            }
         } else if (e.getSource() == saveChat) { // chat save logs
             boolean b = saveChat.isSelected();
             PropertiesManager.setProperties("saveChat", b ? "true" : "false");
