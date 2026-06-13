@@ -487,9 +487,11 @@ menu item (§9) tests the overlay display alone, no game needed.
 - ✅ **Log Chat Senders (debug)** checkbox — persisted as `o3LogChatSenders`; toggles
   `O3PhaseOverlay.logSenders` to print every chat name/text for filter tuning (§5).
 - ✅ **Test O3 Overlay** — fires the four sample taunts.
+- ✅ **Reposition Overlay** — drag the overlay anywhere; position persisted via
+  `PropertiesManager` (`o3OverlayX`/`o3OverlayY`) and restored on next show. Toggling the
+  menu item shows a draggable placeholder; untoggling saves and hides.
 
 **Still open:**
 - Per-phase custom `.wav` sounds (reuse the existing `tomato.realmshark.Sound` infra).
-- Draggable overlay position saved to prefs (the repo uses `PropertiesManager` for prefs).
 - Phase history: scrollable log of the last N alerts.
 - Settings panel: opacity, font size, position.

@@ -30,7 +30,7 @@ public class TomatoMenuBar implements ActionListener {
     private JRadioButtonMenuItem dpsEquipmentNone, dpsEquipmentSimple, dpsEquipmentFull, dpsIcon;
     private JRadioButtonMenuItem dpsSortLastHit, dpsSortFirstHit, dpsSortMaxHp, dpsSortFightTimer, dpsSortBossOnly;
     private JCheckBoxMenuItem fontStyleBold, fontStyleItalic, dpsShowMe, saveChat, chatPing, chatPingGuild, whiteBagSound, chatPingParty, orangeBagSound, redBagSound, goldBagSound, eggBagSound, blueBagSound, tradePing, disableDataSending;
-    private JCheckBoxMenuItem enableO3Overlay, logChatSenders;
+    private JCheckBoxMenuItem enableO3Overlay, logChatSenders, repositionOverlay;
     private JCheckBoxMenuItem filterWhiteBag, filterOrangeBag, filterRedBag, filterGoldBag, filterEggBag, filterBlueBag, filterTealBag, filterPurpleBag, filterPinkBag, filterBrownBag;
     private JSlider soundSlider;
     private JMenu file, edit, info, overlayMenu;
@@ -301,11 +301,14 @@ public class TomatoMenuBar implements ActionListener {
         enableO3Overlay.addActionListener(this);
         logChatSenders = new JCheckBoxMenuItem("Log Chat Senders (debug)");
         logChatSenders.addActionListener(this);
+        repositionOverlay = new JCheckBoxMenuItem("Reposition Overlay");
+        repositionOverlay.addActionListener(this);
         testO3Overlay = new JMenuItem("Test O3 Overlay");
         testO3Overlay.addActionListener(this);
         overlayMenu = new JMenu("Overlay");
         overlayMenu.add(enableO3Overlay);
         overlayMenu.add(logChatSenders);
+        overlayMenu.add(repositionOverlay);
         overlayMenu.add(new JSeparator(SwingConstants.HORIZONTAL));
         overlayMenu.add(testO3Overlay);
         jMenuBar.add(overlayMenu);
@@ -783,6 +786,11 @@ public class TomatoMenuBar implements ActionListener {
             boolean b = logChatSenders.isSelected();
             PropertiesManager.setProperties("o3LogChatSenders", b ? "true" : "false");
             O3PhaseOverlay.logSenders = b;
+        } else if (e.getSource() == repositionOverlay) { // drag the overlay to a new position
+            try {
+                O3PhaseOverlay.getInstance().setRepositioning(repositionOverlay.isSelected());
+            } catch (Exception ignored) {
+            }
         } else if (e.getSource() == testO3Overlay) { // fire sample O3 taunts through the overlay
             final String[] tests = {
                 "FALL BEFORE MY CELESTIAL STRENGTH!",
