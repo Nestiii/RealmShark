@@ -23,7 +23,7 @@ public class O3PhaseOverlay extends JWindow {
     /** Debug: when true, every incoming chat name/text is logged so the sender filter can be tuned. */
     public static boolean logSenders = false;
 
-    /** Prefs keys for the persisted drag position. */
+    /** Prefs keys for the persisted drag position (X = box center, Y = top edge). */
     private static final String PREF_X = "o3OverlayX";
     private static final String PREF_Y = "o3OverlayY";
 
@@ -104,15 +104,21 @@ public class O3PhaseOverlay extends JWindow {
         });
     }
 
-    /** Use the saved drag position if present (clamped on-screen), else default top-center. */
+    /**
+     * Restore the saved position (clamped on-screen): X is the box CENTER so it grows
+     * symmetrically left/right when the label width changes; Y is the plain top edge.
+     * Falls back to top-center when nothing is saved.
+     */
     private void positionOnScreen() {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         String sx = PropertiesManager.getProperty(PREF_X);
         String sy = PropertiesManager.getProperty(PREF_Y);
         if (sx != null && sy != null) {
             try {
-                int x = Math.max(0, Math.min(Integer.parseInt(sx), screen.width - getWidth()));
-                int y = Math.max(0, Math.min(Integer.parseInt(sy), screen.height - getHeight()));
+                int x = Integer.parseInt(sx) - getWidth() / 2;
+                int y = Integer.parseInt(sy);
+                x = Math.max(0, Math.min(x, screen.width - getWidth()));
+                y = Math.max(0, Math.min(y, screen.height - getHeight()));
                 setLocation(x, y);
                 return;
             } catch (NumberFormatException ignore) {
@@ -124,7 +130,9 @@ public class O3PhaseOverlay extends JWindow {
 
     private void saveLocation() {
         Point p = getLocation();
-        PropertiesManager.setProperties(PREF_X, String.valueOf(p.x));
+        // X = center (so a later wider/narrower alert stays horizontally centered here);
+        // Y = top edge (vertical position is fixed, height stays roughly constant).
+        PropertiesManager.setProperties(PREF_X, String.valueOf(p.x + getWidth() / 2));
         PropertiesManager.setProperties(PREF_Y, String.valueOf(p.y));
     }
 
