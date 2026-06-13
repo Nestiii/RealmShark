@@ -267,14 +267,9 @@ public class ChatGUI extends JPanel {
         if (!O3PhaseOverlay.enabled) return;
         boolean isOryx = sender.contains("Oryx the Mad God")
                       || sender.contains("Oryx the Exalted God");
-        boolean isRealmEvent = sender.isEmpty() || sender.startsWith("#");
-        if (!isOryx && !isRealmEvent) return;
-
-        // Realm-event entries match on the bare encounter name, which also appears in the
-        // kill/defeat announcement. Skip anything containing "defeat" so we fire on the
-        // spawn, not the death. (O3 taunts never contain "defeat", so this is safe.)
-        if (isRealmEvent && p.text.toLowerCase().contains("defeat")) return;
-
+        // Realm events arrive as localization keys, e.g. {"k":"stringlist.Grand_Sphinx.new.0"}
+        // (spawn) vs {"k":"stringlist.Grand_Sphinx.killed.2",...} (death). O3PhaseDetector
+        // matches the ".new" spawn key, so deaths are excluded by construction.
         O3PhaseDetector.PhaseAlert alert = O3PhaseDetector.detect(p.text);
         if (alert == null) return;
         try {

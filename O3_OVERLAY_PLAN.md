@@ -435,29 +435,33 @@ string through `O3PhaseDetector.detect` and shows the overlay if matched.
 
 ## 10. Test without an O3 run — realm events
 
-The realm broadcasts event-boss spawn messages through the **same** `TextPacket` path as O3
-taunts, so they exercise the entire pipeline. `TAUNT_MAP` registers the **full authoritative
-encounter list** from RealmEye's quest-monsters "Encounters" section (46 events — Cube God,
-Astral Rift, The Lich King, Skull Shrine, Pentaract, Grand Sphinx, Lord of the Lost Lands,
-Hermit God, Ghost Ship, Killer Bee Nest, Avatar of the Forgotten King, Sentient Monolith, …),
-each keyed on the **encounter name** as a substring. Verified at build time that no name is a
-substring of another, so match order is safe. Hang around the Realm; if the overlay shows for
-any of these, the hook, detector, and overlay all work end to end. The "Test O3 Overlay" menu
-item (§9) tests the overlay display alone, no game needed.
+Realm events come through the **same** `TextPacket` path as O3 taunts. **Confirmed from a live
+capture:** they are NOT readable text — the `text` field is a localization key, and the sender
+is `#Oryx the Mad God`:
 
-> ⚠ Names replace the earlier guessed fragments (which wrongly included Ent Ancient / Cyclops
-> God / Phoenix Lord / Red Demon — not in the current encounter list — and "Lich" instead of
-> "The Lich King"). The overlay label is **just the encounter name** (no "spawned" verb), and
-> `ChatGUI.o3Overlay` **skips realm messages containing "defeat"** so a kill/defeat
-> announcement (which also contains the name) doesn't fire — only the spawn does. Still
-> unverified: the realm-event **sender** gate (research indicates events are announced by an
-> NPC, **"The Realm Eye"**, so the sender is likely *not* blank — confirm with **Log Chat
-> Senders (debug)** and widen the gate in `ChatGUI.o3Overlay`).
+```
+{"k":"stringlist.Grand_Sphinx.new.0"}                          ← Grand Sphinx SPAWNED
+{"k":"stringlist.Skull_Shrine.killed.2","t":{"KILLER":"X"}}    ← Skull Shrine KILLED
+```
 
-> ⚠ These fire only for **realm/server-sender** messages (`sender` blank or `#`-prefixed in
-> `ChatGUI.o3Overlay`). If the debug log shows realm events arrive with a different sender,
-> widen that gate. The boss-name fragments themselves are best-effort — confirm exact in-game
-> wording with **Log Chat Senders (debug)** and adjust if any don't fire.
+So `TAUNT_MAP` registers, for each of the 46 RealmEye "Encounters", the **spawn key**
+`stringlist.<Name>.new` (name = display name, spaces → underscores). The `.killed` variant
+can't match `.new`, so deaths never fire (no "defeat" filter needed — that earlier guess was
+wrong; the real word is "killed"). Label is the readable encounter name. The "Test O3 Overlay"
+menu item (§9) tests the overlay display alone, no game needed.
+
+> ⚠ **Sender gate is fine** — events come from `#Oryx the Mad God`, which both starts with `#`
+> and contains "Oryx the Mad God". The original failure was purely the text format (matching
+> `"Grand Sphinx"` with a space against `Grand_Sphinx` in a JSON key).
+>
+> ⚠ Two encounter names with apostrophes (Bilgewater's Galleon, World's Oyster) may use a
+> different internal token — verify those via the debug log.
+>
+> 🚩 **Likely follow-up for O3 itself:** since realm events use `stringlist.*` keys, the live
+> **O3 boss taunts almost certainly do too** (e.g. some `stringlist.<...>.new`), which means
+> the human-readable O3 taunt map in §6/§8 probably **won't match live in-game** — only the
+> Test button (which feeds readable strings) works. This needs a real **O3 chat capture** to
+> get the actual taunt keys, then the O3 entries get the same `stringlist` treatment.
 
 ---
 

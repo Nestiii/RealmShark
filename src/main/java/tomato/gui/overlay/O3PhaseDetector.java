@@ -187,14 +187,15 @@ public class O3PhaseDetector {
 
         // ── Realm Event Encounters ────────────────────────────────────────
         // Authoritative list from RealmEye's quest-monsters "Encounters" section.
-        // Keyed on the encounter NAME, matched as a substring of the chat text. These only
-        // run for realm/server-sender messages (see ChatGUI.o3Overlay), so a player typing
-        // a name won't trigger them.
         //
-        // The label is just the encounter name (no "spawned" verb): we match on the bare
-        // name, and ChatGUI.o3Overlay skips realm messages containing "defeat" so this fires
-        // on the spawn announcement, not the kill/defeat one. No insertion-order dependency:
-        // no name is a substring of another.
+        // Realm events DO NOT arrive as readable text — the chat text is a localization key:
+        //     {"k":"stringlist.Grand_Sphinx.new.0"}                          (spawn)
+        //     {"k":"stringlist.Skull_Shrine.killed.2","t":{"KILLER":"X"}}    (death)
+        // So we match the SPAWN key `stringlist.<Name>.new` (name = display name with spaces
+        // replaced by underscores). The `.killed` variant won't match `.new`, so deaths never
+        // fire — no separate "defeat" filter needed. Label is the readable name.
+        // (Names with apostrophes — Bilgewater's Galleon, World's Oyster — may use a different
+        // internal token; verify those two via the debug log.)
         String[] realmEvents = {
             "Cube God", "Astral Rift", "Daughter of Limon", "Pentaract", "The Lich King",
             "The Plague Doctor", "Well of Souls", "Skull Shrine", "Possessed Pumpkin",
@@ -209,7 +210,8 @@ public class O3PhaseDetector {
             "Aerial Warship", "Sentient Monolith"
         };
         for (String ev : realmEvents) {
-            TAUNT_MAP.put(ev, new PhaseAlert(ev, "#77CCFF", 3000, Danger.LOW, "[realm event]"));
+            String spawnKey = "stringlist." + ev.replace(" ", "_") + ".new";
+            TAUNT_MAP.put(spawnKey, new PhaseAlert(ev, "#77CCFF", 3000, Danger.LOW, "[realm event]"));
         }
     }
 
